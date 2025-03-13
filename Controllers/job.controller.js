@@ -1,26 +1,27 @@
+import Application from "../Models/application.model.js";
 import Model from "../Models/job.model.js";
 
 import mongoose from "mongoose";
 const postJob = async (req, res) => {
   try {
     const job = await Model.create(req.body);
-    // Respond with the created job
+
     res.status(201).json({ message: "Job created successfully", job });
   } catch (error) {
     res.status(500).json({ error: error.message });
-  }}
-  const getAllJob = async (req, res) => {
-    try {
-      const jobs = await Model.find({});
-      
-      res.status(200).json(jobs);
-    } catch (error) {
-      console.error("Error Fetching Jobs:", error);
-      res.status(500).json({ error: error.message });
-    }
-  };
-  
-  
+  }
+};
+const getAllJob = async (req, res) => {
+  try {
+    const jobs = await Model.find({});
+
+    res.status(200).json(jobs);
+  } catch (error) {
+    console.error("Error Fetching Jobs:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 const getJobById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -73,18 +74,18 @@ const searchResult = async (req, res) => {
     }
 
     const result = await Model.aggregate([
-        {
-          $search: {
-            index: "default",
-            text: {
-              query: key,
-              path: {
-                wildcard: "*"
-              }
-            }
-          }
-        }
-      ]);
+      {
+        $search: {
+          index: "default",
+          text: {
+            query: key,
+            path: {
+              wildcard: "*",
+            },
+          },
+        },
+      },
+    ]);
 
     if (result.length === 0) {
       return res.status(404).json({ message: "No matching jobs found" });
@@ -95,7 +96,83 @@ const searchResult = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+const filterJobs = async (req, res) => {
+  const { location, category } = req.body;
+  try {
+    const filter = {};
+    if (location) {
+      filter["company.location"] = location;
+    }
+    if (category) {
+      filter.category = category;
+    }
+    const job = await Model.find({ filter });
+    res.status(200).json(job);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+const applyJob = async (req, res) => {
+  const { resume, jobId, userId,coverLetter } = req.body;
+  try {
+    const apply = await Application.create({
+      resume,
+      jobId,
+      userId,
+      coverLetter,
+    });
+    res
+      .status(201)
+      .json({ message: "Application submitted successfully", apply });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+    console.log(error);
+  }
+};
 
+const getApplicationsByUserId = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+    const applications = await Application.find({ jobId });
+    if (!applications) {
+      return res
+        .status(404)
+        .json({ message: "No applications found for this user" });
+    }
+    res
+      .status(200)
+      .json({ message: "Applications fetched successfully", applications });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to fetch applications", error: error.message });
+  }
+};
+const UpdateJobById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body; 
+    const existingJob = await Model.findById(id);
+    if (!existingJob) {
+      return res.status(404).json({ message: "Job not found" });
+    }
+
+    // Update only the status field
+    const updatedJob = await Model.findByIdAndUpdate(
+      id,
+      { status }, 
+      {
+        new: true,
+        runValidators: true, 
+      }
+    );
+
+    // Send success response
+    res.status(200).json({ message: "Job status updated successfully", job: updatedJob });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update job status", error: error.message });
+  }
+};
 export {
   postJob,
   getAllJob,
@@ -103,4 +180,8 @@ export {
   updateJobById,
   deleteJobById,
   searchResult,
+  filterJobs,
+  applyJob,
+  getApplicationsByUserId,
+  UpdateJobById,
 };
