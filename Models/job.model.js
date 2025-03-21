@@ -21,6 +21,7 @@ const Model = mongoose.Schema(
       postedDate: { type: Date, default: Date.now },
       expiryDate: { type: Date },
     },
+    postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     application: {
       url: { type: String },
       contactEmail: { type: String, required: true },
@@ -32,6 +33,7 @@ const Model = mongoose.Schema(
     experienceLevel: { type: String },
     status: { type: String, enum: ["pending", "reviewed", "accepted", "rejected"], default: "pending" }, // Add this line
   },
+  
   {
     timestamps: true, // Fix typo: timeStamp -> timestamps
   }
