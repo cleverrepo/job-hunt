@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import dotenv from 'dotenv';
 import router from"./Routes/user.routs.js"
 import cors from "cors";
-
+import routes from "./Routes/jobs.routes.js";
 const app = express();
 app.use(cors({ credentials: true, origin: 'http://localhost:8000' }));
 
@@ -13,9 +13,15 @@ const port = process.env.PORT || 5000;
 // Middleware
 dotenv.config();
 app.use(express.json());
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  next();
+});
 
 // Routes
-import routes from "./Routes/jobs.routes.js";
+
 app.use("/api/jobs", routes);
 app.use("/api/user", router);
 
