@@ -5,6 +5,7 @@ const Model = mongoose.Schema(
     description: { type: String, required: true },
     requirements: { type: [String], required: true },
     responsibilities: { type: [String], required: true },
+    logo: { type: [String], required: true },
     salary: {
       min: { type: Number },
       max: { type: Number },
