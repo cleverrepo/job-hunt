@@ -13,7 +13,10 @@ const postJob = async (req, res) => {
 };
 const getAllJob = async (req, res) => {
   try {
-    const jobs = await Model.find({}).sort([["createdAt", -1], ["title", 1]]);
+    const jobs = await Model.find({}).sort([
+      ["createdAt", -1],
+      ["title", 1],
+    ]);
 
     res.status(200).json(jobs);
   } catch (error) {
@@ -113,20 +116,34 @@ const filterJobs = async (req, res) => {
   }
 };
 const applyJob = async (req, res) => {
-  const { resume, jobId, userId,coverLetter } = req.body;
+  const { resume, jobId, userId, coverLetter } = req.body;
+
+  
+  if (!resume || !jobId || !userId || !coverLetter) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
   try {
+   
+    const alreadyApplied = await Application.findOne({ jobId, userId });
+
+    if (alreadyApplied) {
+      return res.status(400).json({ message: "You have already applied for this job" });
+    }
+
+   
     const apply = await Application.create({
       resume,
       jobId,
       userId,
       coverLetter,
     });
-    res
-      .status(201)
-      .json({ message: "Application submitted successfully", apply });
+
+    
+    res.status(201).json({ message: "Application submitted successfully", apply });
   } catch (error) {
-    res.status(500).json({ error: error.message });
-    console.log(error);
+    console.error("Error applying for job:", error); 
+    res.status(500).json({ error: "Failed to submit application", details: error.message });
   }
 };
 
@@ -151,7 +168,7 @@ const getApplicationsByUserId = async (req, res) => {
 const UpdateJobById = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body; 
+    const { status } = req.body;
     const existingJob = await Model.findById(id);
     if (!existingJob) {
       return res.status(404).json({ message: "Job not found" });
@@ -160,17 +177,21 @@ const UpdateJobById = async (req, res) => {
     // Update only the status field
     const updatedJob = await Model.findByIdAndUpdate(
       id,
-      { status }, 
+      { status },
       {
         new: true,
-        runValidators: true, 
+        runValidators: true,
       }
     );
 
     // Send success response
-    res.status(200).json({ message: "Job status updated successfully", job: updatedJob });
+    res
+      .status(200)
+      .json({ message: "Job status updated successfully", job: updatedJob });
   } catch (error) {
-    res.status(500).json({ message: "Failed to update job status", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Failed to update job status", error: error.message });
   }
 };
 export {
