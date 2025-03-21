@@ -13,7 +13,7 @@ const postJob = async (req, res) => {
 };
 const getAllJob = async (req, res) => {
   try {
-    const jobs = await Model.find({});
+    const jobs = await Model.find({}).sort([["createdAt", -1], ["title", 1]]);
 
     res.status(200).json(jobs);
   } catch (error) {

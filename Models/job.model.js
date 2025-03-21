@@ -16,6 +16,7 @@ const Model = mongoose.Schema(
       website: { type: String },
       location: { type: String, required: true },
     },
+    createdAt: { type: Date, default: Date.now },
     posting: {
       postedDate: { type: Date, default: Date.now },
       expiryDate: { type: Date },
