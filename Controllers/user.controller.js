@@ -181,5 +181,19 @@ const resendVerificationCode = async (req, res) => {
     res.status(500).json({ message: "Failed to resend verification code", error: error.message });
   }
 };
+const verifyToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1]; // Extract token from header
 
-export { create, login, verifyEmail, resendVerificationCode };
+  if (!token) {
+    return res.status(401).json({ error: "Access denied. No token provided." });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the token
+    req.userId = decoded.userId; // Attach the user ID to the request object
+    next();
+  } catch (error) {
+    res.status(400).json({ error: "Invalid token." });
+  }
+};
+export { create, login, verifyEmail, resendVerificationCode,verifyToken };

@@ -10,10 +10,11 @@ import {
   applyJob,
   getApplicationsByUserId,
   UpdateJobById,
+  verifyToken,
 } from "../Controllers/job.controller.js";
 const routes = express.Router();
 routes.post("/", postJob);
-routes.post("/:id/apply", applyJob);
+routes.post("/:id/apply", verifyToken, applyJob);
 routes.put("/:id", updateJobById);
 routes.put("/:id/status", UpdateJobById);
 routes.get("/:id/applications", getApplicationsByUserId);
