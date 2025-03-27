@@ -69,9 +69,9 @@ const deleteJobById = async (req, res) => {
 };
 const searchResult = async (req, res) => {
   try {
-    const { key } = req.params; // Get the search key from route parameters
+    const { key } = req.params;  
 
-    // Validate that 'key' is provided
+     
     if (!key) {
       return res.status(400).json({ error: "'key' parameter is required" });
     }

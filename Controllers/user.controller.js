@@ -16,6 +16,10 @@ const transporter = nodemailer.createTransport({
 const create = async (req, res) => {
   const { name, email, password } = req.body;
   const userExist = await UserModel.findOne({ email });
+  const userNameExist=await UserModel.findOne({name});
+  if(userNameExist){
+    return res.status(400).json({ message: "Username Taken already" });
+  }
 
   if (userExist) {
     return res.status(400).json({ message: "User already exists" });
