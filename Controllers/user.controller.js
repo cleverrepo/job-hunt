@@ -186,18 +186,25 @@ const resendVerificationCode = async (req, res) => {
   }
 };
 const verifyToken = (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1]; // Extract token from header
+  const token = req.headers['authorization']?.split(' ')[1]; 
 
   if (!token) {
     return res.status(401).json({ error: "Access denied. No token provided." });
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the token
-    req.userId = decoded.userId; // Attach the user ID to the request object
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); 
+    req.userId = decoded.userId;
     next();
   } catch (error) {
     res.status(400).json({ error: "Invalid token." });
   }
 };
-export { create, login, verifyEmail, resendVerificationCode,verifyToken };
+const logOut=async(req,res)=>{
+  res.cookie("token", "", {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+  res.status(200).json({ message: "Logged out successfully" });
+}
+export { create, login, verifyEmail, resendVerificationCode,verifyToken,logOut };
