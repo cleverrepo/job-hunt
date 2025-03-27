@@ -6,7 +6,7 @@ import {
 const router=express.Router()
 router.post("/register-user",create)
 router.post("/login",login)
-router.post("/log-out",logOut)
+router.post("/logout",logOut)
 router.post("/verify-email",verifyEmail)
 router.post("/resend-code",resendVerificationCode)
 
