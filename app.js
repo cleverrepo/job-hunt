@@ -5,9 +5,10 @@ import dotenv from 'dotenv';
 import router from"./Routes/user.routs.js"
 import cors from "cors";
 import routes from "./Routes/jobs.routes.js";
+import scheduler from "./Utils/scheduler.js";
 const app = express();
 app.use(cors({ credentials: true, origin: 'http://localhost:8000' }));
-
+scheduler.start()
 const port = process.env.PORT || 5000;
 
 // Middleware
