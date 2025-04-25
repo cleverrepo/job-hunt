@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import generateToken from "../Utils/generateToken.js";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import validator from 'validator';
+ 
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import rateLimit from 'express-rate-limit';
@@ -43,21 +43,7 @@ const create = async (req, res) => {
       });
     }
 
-     
-    if (!validator.isEmail(email)) {
-      return res.status(400).json({ 
-        success: false,
-        message: "Invalid email format" 
-      });
-    }
-
-     
-    if (!validator.isAlphanumeric(name)) {
-      return res.status(400).json({ 
-        success: false,
-        message: "Username can only contain letters and numbers" 
-      });
-    }
+ 
 
     if (name.length < 3 || name.length > 20) {
       return res.status(400).json({ 
