@@ -9,14 +9,14 @@ import {
   filterJobs,
   applyJob,
   getApplicationsByUserId,
-  verifyToken,
+ 
   updateJobStatusById
 } from "../Controllers/job.controller.js";
 
 const routes = express.Router();
 
 routes.post("/", postJob);
-routes.post("/:id/apply", verifyToken, applyJob);
+routes.post("/:id/apply",   applyJob);
 routes.put("/:id", UpdateJobById);  
 routes.put("/:id/status", updateJobStatusById);
 routes.get("/:id/applications", getApplicationsByUserId);
