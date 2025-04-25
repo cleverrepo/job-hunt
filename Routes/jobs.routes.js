@@ -3,27 +3,26 @@ import {
   postJob,
   getAllJob,
   getJobById,
-  UpdateJobById,   
+  UpdateJobById,
   deleteJobById,
   searchResult,
   filterJobs,
   applyJob,
   getApplicationsByUserId,
- 
-  updateJobStatusById
+  updateJobStatusById,
 } from "../Controllers/job.controller.js";
 
 const routes = express.Router();
 
-routes.post("/", postJob);
-routes.post("/:id/apply",   applyJob);
-routes.put("/:id", UpdateJobById);  
-routes.put("/:id/status", updateJobStatusById);
+routes.post("/", postJob); //done
+routes.post("/:id/apply", applyJob);
+routes.put("/:id", UpdateJobById); //done
+routes.put("/:id/status", updateJobStatusById);//done
 routes.get("/:id/applications", getApplicationsByUserId);
 routes.get("/filter", filterJobs);
-routes.get("/", getAllJob);
-routes.get("/:id", getJobById);
-routes.get("/search/:key", searchResult);
-routes.delete("/:id", deleteJobById);
+routes.get("/", getAllJob); //done
+routes.get("/:id", getJobById); //done
+routes.get("/search/:key", searchResult); //done
+routes.delete("/:id", deleteJobById); //done
 
 export default routes;

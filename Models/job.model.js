@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose from "mongoose";
 const Model = mongoose.Schema(
   {
     title: { type: String, required: true },
@@ -21,7 +21,11 @@ const Model = mongoose.Schema(
       postedDate: { type: Date, default: Date.now },
       expiryDate: { type: Date },
     },
-    postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    postedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     application: {
       url: { type: String },
       contactEmail: { type: String, required: true },
@@ -31,12 +35,15 @@ const Model = mongoose.Schema(
     tags: { type: [String] },
     isRemote: { type: Boolean, default: false },
     experienceLevel: { type: String },
-    status: { type: String, enum: ["pending", "reviewed", "accepted", "rejected"], default: "pending" }, // Add this line
+    status: {
+      type: String,
+      enum: ["pending", "reviewed", "accepted", "rejected"],
+      default: "pending",
+    },  
   },
-  
+
   {
-    timestamps: true, // Fix typo: timeStamp -> timestamps
+    timestamps: true,
   }
 );
-    export default mongoose.model("Model", Model, "Jobs")
-    
+export default mongoose.model("Model", Model, "Jobs");
