@@ -42,7 +42,7 @@ const getJobById = async (req, res) => {
   }
 };
 
-
+// Update job by ID (keeping original uppercase name)
 const UpdateJobById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -197,7 +197,6 @@ const updateJobStatusById = async (req, res) => {
   }
 };
 
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/"); 
@@ -211,7 +210,7 @@ export {
   postJob,
   getAllJob,
   getJobById,
-  UpdateJobById,
+  UpdateJobById,  
   deleteJobById,
   searchResult,
   filterJobs,
