@@ -42,8 +42,8 @@ const getJobById = async (req, res) => {
   }
 };
 
-// Update a job by ID
-const updateJobById = async (req, res) => {
+
+const UpdateJobById = async (req, res) => {
   try {
     const { id } = req.params;
     const job = await Model.findByIdAndUpdate(id, req.body, {
@@ -211,7 +211,7 @@ export {
   postJob,
   getAllJob,
   getJobById,
-  updateJobById,
+  UpdateJobById,
   deleteJobById,
   searchResult,
   filterJobs,

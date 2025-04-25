@@ -3,7 +3,7 @@ import {
   postJob,
   getAllJob,
   getJobById,
-  updateJobById,
+  UpdateJobById,
   deleteJobById,
   searchResult,
   filterJobs,
@@ -11,12 +11,13 @@ import {
   getApplicationsByUserId,
   updateJobById,
   verifyToken,
+  updateJobStatusById
 } from "../Controllers/job.controller.js";
 const routes = express.Router();
 routes.post("/", postJob);
 routes.post("/:id/apply", verifyToken, applyJob);
-routes.put("/:id", updateJobById);
-routes.put("/:id/status", updateJobById);
+routes.put("/:id", UpdateJobById);
+routes.put("/:id/status", updateJobStatusById);
 routes.get("/:id/applications", getApplicationsByUserId);
 routes.get("/filter", filterJobs);
 routes.get("/", getAllJob);
