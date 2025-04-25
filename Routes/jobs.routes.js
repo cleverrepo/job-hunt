@@ -9,7 +9,7 @@ import {
   filterJobs,
   applyJob,
   getApplicationsByUserId,
-  updateJobById,
+  
   verifyToken,
   updateJobStatusById
 } from "../Controllers/job.controller.js";
