@@ -83,19 +83,22 @@ const searchResult = async (req, res) => {
       return res.status(400).json({ error: "'key' parameter is required" });
     }
 
-    const result = await Model.aggregate([
-      {
-        $search: {
-          index: "default",
-          text: {
-            query: key,
-            path: {
-              wildcard: "*",
-            },
-          },
-        },
-      },
-    ]);
+    const result = await Model.aggregate(
+     
+      [
+        {
+          $search: {
+            index: "jobs",
+            text: {
+              query: key,
+              path: {
+                wildcard: "*"
+              }
+            }
+          }
+        }
+      ]
+    );
 
     if (result.length === 0) {
       return res.status(404).json({ message: "No matching jobs found" });
