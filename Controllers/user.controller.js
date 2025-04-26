@@ -3,14 +3,13 @@ import bcrypt from "bcryptjs";
 import generateToken from "../Utils/generateToken.js";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
- 
-import crypto from 'crypto';
-import jwt from 'jsonwebtoken';
-import rateLimit from 'express-rate-limit';
+
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import rateLimit from "express-rate-limit";
 
 dotenv.config();
 
- 
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -18,73 +17,67 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
   tls: {
-    rejectUnauthorized: false  
-  }
+    rejectUnauthorized: false,
+  },
 });
 
- 
 export const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,  
-  max: 5,  
-  message: 'Too many attempts, please try again later',
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: "Too many attempts, please try again later",
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
 });
 
 const create = async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
-     
     if (!name || !email || !password) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "All fields are required" 
+        message: "All fields are required",
       });
     }
-
- 
 
     if (name.length < 3 || name.length > 20) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Username must be between 3-20 characters" 
+        message: "Username must be between 3-20 characters",
       });
     }
 
-     
     const passwordRegex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
     if (!passwordRegex.test(password)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Password must contain at least one uppercase, one lowercase, one number and be 6-20 characters" 
+        message:
+          "Password must contain at least one uppercase, one lowercase, one number and be 6-20 characters",
       });
     }
 
-     
     const [userExist, userNameExist] = await Promise.all([
       UserModel.findOne({ email }),
-      UserModel.findOne({ name })
+      UserModel.findOne({ name }),
     ]);
 
     if (userExist) {
-      return res.status(409).json({ 
+      return res.status(409).json({
         success: false,
-        message: "Email already registered" 
+        message: "Email already registered",
       });
     }
 
     if (userNameExist) {
-      return res.status(409).json({ 
+      return res.status(409).json({
         success: false,
-        message: "Username already taken" 
+        message: "Username already taken",
       });
     }
 
-    
     const hashedPassword = await bcrypt.hash(password, 14);
     const verificationCode = crypto.randomInt(100000, 999999).toString();
-    const verificationExpires = new Date(Date.now() + 10 * 60 * 1000);  
+    const verificationExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     const user = new UserModel({
       name,
@@ -96,10 +89,8 @@ const create = async (req, res) => {
 
     await user.save();
 
-     
     const token = generateToken(user._id);
 
-     
     const mailOptions = {
       from: `"JobHunt" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -114,34 +105,33 @@ const create = async (req, res) => {
           <p>This code will expire in 10 minutes.</p>
           <p>If you didn't request this, please ignore this email.</p>
         </div>
-      `
+      `,
     };
 
     await transporter.sendMail(mailOptions);
 
- 
     const userResponse = {
       _id: user._id,
       name: user.name,
       email: user.email,
       isVerified: user.isVerified,
-      createdAt: user.createdAt
+      createdAt: user.createdAt,
     };
 
     res.status(201).json({
       success: true,
       message: "User registered successfully. Verification code sent.",
       user: userResponse,
-      token
+      token,
     });
-
   } catch (error) {
     console.error(`Registration Error: ${error.stack}`);
     res.status(500).json({
       success: false,
-      message: process.env.NODE_ENV === 'development' 
-        ? error.message 
-        : 'Registration failed. Please try again.'
+      message:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Registration failed. Please try again.",
     });
   }
 };
@@ -151,34 +141,34 @@ const login = async (req, res) => {
 
   try {
     if (!email || !password) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Email and password are required" 
+        message: "Email and password are required",
       });
     }
 
-    const user = await UserModel.findOne({ email }).select('+password');
+    const user = await UserModel.findOne({ email }).select("+password");
 
     if (!user) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: false,
-        message: "Invalid credentials" 
+        message: "Invalid credentials",
       });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: false,
-        message: "Invalid credentials" 
+        message: "Invalid credentials",
       });
     }
 
     if (!user.isVerified) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         success: false,
-        message: "Please verify your email first" 
+        message: "Please verify your email first",
       });
     }
 
@@ -187,23 +177,23 @@ const login = async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
-      isVerified: user.isVerified
+      isVerified: user.isVerified,
     };
 
     res.status(200).json({
       success: true,
       message: "Login successful",
       user: userResponse,
-      token
+      token,
     });
-
   } catch (error) {
     console.error(`Login Error: ${error.stack}`);
     res.status(500).json({
       success: false,
-      message: process.env.NODE_ENV === 'development' 
-        ? error.message 
-        : 'Login failed. Please try again.'
+      message:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Login failed. Please try again.",
     });
   }
 };
@@ -213,21 +203,21 @@ const verifyEmail = async (req, res) => {
 
   try {
     if (!code || code.length !== 6) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Valid verification code is required" 
+        message: "Valid verification code is required",
       });
     }
 
     const user = await UserModel.findOne({
       verification: code,
-      verificationExpires: { $gt: Date.now() }
+      verificationExpires: { $gt: Date.now() },
     });
 
     if (!user) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Invalid or expired verification code" 
+        message: "Invalid or expired verification code",
       });
     }
 
@@ -238,19 +228,19 @@ const verifyEmail = async (req, res) => {
 
     const token = generateToken(user._id);
 
-    res.status(200).json({ 
+    res.status(200).json({
       success: true,
       message: "Email verified successfully",
-      token
+      token,
     });
-
   } catch (error) {
     console.error(`Email Verification Error: ${error.stack}`);
     res.status(500).json({
       success: false,
-      message: process.env.NODE_ENV === 'development' 
-        ? error.message 
-        : 'Email verification failed. Please try again.'
+      message:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Email verification failed. Please try again.",
     });
   }
 };
@@ -260,44 +250,43 @@ const resendVerificationCode = async (req, res) => {
 
   try {
     if (!validator.isEmail(email)) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Valid email is required" 
+        message: "Valid email is required",
       });
     }
 
     const user = await UserModel.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        message: "User not found" 
+        message: "User not found",
       });
     }
 
     if (user.isVerified) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: "Email is already verified" 
+        message: "Email is already verified",
       });
     }
 
-     
     if (user.verificationExpires > Date.now()) {
-      const timeLeft = Math.ceil((user.verificationExpires - Date.now()) / (60 * 1000));
-      return res.status(429).json({ 
+      const timeLeft = Math.ceil(
+        (user.verificationExpires - Date.now()) / (60 * 1000)
+      );
+      return res.status(429).json({
         success: false,
-        message: `Please wait ${timeLeft} minutes before requesting a new code`
+        message: `Please wait ${timeLeft} minutes before requesting a new code`,
       });
     }
 
-     
     const newVerificationCode = crypto.randomInt(100000, 999999).toString();
     user.verification = newVerificationCode;
     user.verificationExpires = new Date(Date.now() + 10 * 60 * 1000);
     await user.save();
 
-    
     const mailOptions = {
       from: `"JobHunt" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -311,35 +300,35 @@ const resendVerificationCode = async (req, res) => {
           </div>
           <p>This code will expire in 10 minutes.</p>
         </div>
-      `
+      `,
     };
 
     await transporter.sendMail(mailOptions);
 
-    res.status(200).json({ 
+    res.status(200).json({
       success: true,
-      message: "New verification code sent successfully" 
+      message: "New verification code sent successfully",
     });
-
   } catch (error) {
     console.error(`Resend Code Error: ${error.stack}`);
     res.status(500).json({
       success: false,
-      message: process.env.NODE_ENV === 'development' 
-        ? error.message 
-        : 'Failed to resend verification code. Please try again.'
+      message:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : "Failed to resend verification code. Please try again.",
     });
   }
 };
 
 const verifyToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ 
+    return res.status(401).json({
       success: false,
-      message: "Access denied. No token provided." 
+      message: "Access denied. No token provided.",
     });
   }
 
@@ -349,17 +338,17 @@ const verifyToken = (req, res, next) => {
     next();
   } catch (error) {
     console.error(`Token Verification Error: ${error.stack}`);
-    
+
     let message = "Invalid token";
-    if (error.name === 'TokenExpiredError') {
+    if (error.name === "TokenExpiredError") {
       message = "Token expired";
-    } else if (error.name === 'JsonWebTokenError') {
+    } else if (error.name === "JsonWebTokenError") {
       message = "Malformed token";
     }
 
-    res.status(401).json({ 
+    res.status(401).json({
       success: false,
-      message 
+      message,
     });
   }
 };
@@ -367,23 +356,22 @@ const verifyToken = (req, res, next) => {
 const logOut = (req, res) => {
   res.cookie("token", "", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    expires: new Date(0)
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+    expires: new Date(0),
   });
-  
-  res.status(200).json({ 
+
+  res.status(200).json({
     success: true,
-    message: "Logged out successfully" 
+    message: "Logged out successfully",
   });
 };
 
-export { 
-  create, 
-  login, 
-  verifyEmail, 
-  resendVerificationCode, 
-  verifyToken, 
+export {
+  create,
+  login,
+  verifyEmail,
+  resendVerificationCode,
+  verifyToken,
   logOut,
-  
 };
