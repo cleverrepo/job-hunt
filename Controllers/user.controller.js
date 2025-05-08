@@ -16,9 +16,6 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  tls: {
-    rejectUnauthorized: false,
-  },
 });
 
 export const authLimiter = rateLimit({
@@ -89,7 +86,7 @@ const create = async (req, res) => {
 
     await user.save();
 
-    const token = generateToken(user._id);
+    const token = generateToken(res, user._id);
 
     const mailOptions = {
       from: `"JobHunt" <${process.env.EMAIL_USER}>`,
@@ -99,7 +96,7 @@ const create = async (req, res) => {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #2563eb;">Welcome to JobHunt, ${name}!</h2>
           <p>Your verification code is:</p>
-          <div style="background: #f3f4f6; padding: 16px; text-align: center; font-size: 24px; letter-spacing: 2px; margin: 16px 0;">
+          <div style="background:rgb(74, 219, 139); padding: 16px; text-align: center; font-size: 24px; letter-spacing: 2px; margin: 16px 0;">
             ${verificationCode}
           </div>
           <p>This code will expire in 10 minutes.</p>
@@ -124,6 +121,7 @@ const create = async (req, res) => {
       user: userResponse,
       token,
     });
+    console.log("Incoming request body:", req.body);
   } catch (error) {
     console.error(`Registration Error: ${error.stack}`);
     res.status(500).json({
@@ -209,15 +207,19 @@ const verifyEmail = async (req, res) => {
       });
     }
 
-    const user = await UserModel.findOne({
-      verification: code,
-      verificationExpires: { $gt: Date.now() },
-    });
+    const user = await UserModel.findOne({ verification: String(code) });
 
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: "Invalid or expired verification code",
+        message: "Invalid verification code",
+      });
+    }
+
+    if (user.verificationExpires <= new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: "Verification code has expired",
       });
     }
 
@@ -226,7 +228,7 @@ const verifyEmail = async (req, res) => {
     user.verificationExpires = undefined;
     await user.save();
 
-    const token = generateToken(user._id);
+    const token = generateToken(res, user._id);
 
     res.status(200).json({
       success: true,
@@ -313,10 +315,7 @@ const resendVerificationCode = async (req, res) => {
     console.error(`Resend Code Error: ${error.stack}`);
     res.status(500).json({
       success: false,
-      message:
-        process.env.NODE_ENV === "development"
-          ? error.message
-          : "Failed to resend verification code. Please try again.",
+      message: error.message,
     });
   }
 };

@@ -8,7 +8,8 @@ import routes from "./Routes/jobs.routes.js";
  
 const app = express();
 app.use(cors({ credentials: true, origin: 'http://localhost:8000' }));
- 
+app.use(express.urlencoded({ extended: true }));
+
 const port = process.env.PORT || 5000;
 
 // Middleware
